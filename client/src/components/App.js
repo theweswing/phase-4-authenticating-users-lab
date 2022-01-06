@@ -1,45 +1,57 @@
-import { useState, useEffect } from "react";
-import { Switch, Route } from "react-router-dom";
-import Article from "./Article";
-import Header from "./Header";
-import Home from "./Home";
+import {useState, useEffect } from "react";
+import { Route, Switch } from "react-router-dom";
 import Login from "./Login";
+import SignUp from "./SignUp";
+import Home from "./Home";
+import GamesContainer from "./GameContainer";
+import MatchContainer from "./MatchContainer";
+import HeaderNonUser from "./HeaderNonUser";
 
-function App() {
+const App = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    fetch("/me").then((response) => {
-      if (response.ok) {
-        response.json().then((user) => setUser(user));
+    fetch("/me").then((r) => {
+      if (r.ok) {
+        r.json().then((foundUser) => {
+        setUser(foundUser)}
+          );
       }
     });
   }, []);
 
-  function handleLogin(user) {
-    setUser(user);
+  if (user) {
+    return (
+      <div className="app">
+        <Home user={user} />
+        <Switch>
+          <Route exact path="/home">
+            <Home />
+          </Route>
+          <Route exact path="/games">
+            <GamesContainer />
+          </Route>
+          <Route exact path="/matches">
+            <MatchContainer />
+          </Route>
+        </Switch>
+      </div>
+    );
+  } else {
+    return (
+      <div className="app">
+        <HeaderNonUser />
+        <Switch>
+          <Route exact path="/signup">
+            <SignUp />
+          </Route>
+          <Route exact path="/">
+            <Login setUser={setUser} />
+          </Route>
+        </Switch>
+      </div>
+    );
   }
-
-  function handleLogout() {
-    setUser(null);
-  }
-
-  return (
-    <div className="App">
-      <Header user={user} onLogout={handleLogout} />
-      <Switch>
-        <Route exact path="/articles/:id">
-          <Article />
-        </Route>
-        <Route exact path="/login">
-          <Login onLogin={handleLogin} />
-        </Route>
-        <Route exact path="/">
-          <Home />
-        </Route>
-      </Switch>
-    </div>
-  );
-}
+};
 
 export default App;
